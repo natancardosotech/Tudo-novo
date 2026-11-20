@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel</title>
+    <link rel="stylesheet" href="painel.css">
+</head>
+
+<body>
+    <h1>Painel Tudo Novo</h1><button onclick="sair()">Sair</button>
+    <h2>Pedidos</h2>
+    <div id="lista-pedidos"></div>
+    <h2>Produtos</h2>
+    <div id="lista-produtos"></div>
+    <h2>Novo Produto</h2>
+    <form id="form-produto"><input id="novo-nome" placeholder="Nome"><input id="novo-preco" type="number"
+            placeholder="Preço"><input id="novo-categoria" placeholder="Categoria: vulcao, copo..."><input
+            id="novo-descricao" placeholder="Descrição"><input id="novo-imagem"
+            placeholder="Foto: imagens/vulcao/...jpg"><button>Criar Produto</button></form>
+    <script src="painel.js"></script>
+</body>
+
+</html>

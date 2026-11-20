@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tudo Novo - Sobremesas e Doces</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilo do Login e Painel da Vendedora */
+        .fundo-vendedora {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+        }
+
+        .modal-vendedora {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 25px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 420px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-vendedora h3 {
+            margin: 0 0 10px;
+            color: #ff6b9d;
+        }
+
+        .modal-vendedora input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+
+        .modal-vendedora button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-entrar {
+            background: #ff6b9d;
+            color: #fff;
+        }
+
+        .btn-voltar {
+            background: #eee;
+            color: #333;
+        }
+
+        .btn-vendedora {
+            background: #fff;
+            border: 1px solid #ff6b9d;
+            color: #ff6b9d;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .item-painel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            gap: 8px;
+        }
+
+        .item-painel b {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .item-painel button {
+            width: auto;
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+
+        .btn-disponivel {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .btn-esgotado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        #lista-painel {
+            max-height: 350px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">🍰 Tudo Novo</div>
+        <div class="busca">
+            <input type="text" id="busca" placeholder="Buscar doce... Ex: Copo da Felicidade">
+            <button onclick="buscar()">🔍</button>
+        </div>
+        <div class="header-acoes">
+            <span id="endereco-topo">📍 Mongaguá - SP</span>
+            <button class="btn-carrinho" onclick="abrirCarrinho()">🛒 Carrinho (<span
+                    id="contador-carrinho">0</span>)</button>
+        </div>
+    </header>
+
+    <div class="faixa">🚚 Entrega rápida em Mongaguá | 🍫 Feito na hora | 💳 Pix, Cartão e Dinheiro</div>
+
+    <nav class="categorias">
+        <button onclick="filtrarCategoria('Todos')" class="ativo">Todos</button>
+        <button onclick="filtrarCategoria('Favoritos')">❤️ Favoritos (<span id="contador-fav">0</span>)</button>
+        <button onclick="filtrarCategoria('Destaques')">Destaques</button>
+        <button onclick="filtrarCategoria('Copo')">Copo da Felicidade</button>
+        <button onclick="filtrarCategoria('Bolos')">Bolos e Tortas</button>
+        <button onclick="filtrarCategoria('Milkshake')">Milkshakes</button>
+        <button onclick="filtrarCategoria('Acai')">Açaí</button>
+        <button onclick="filtrarCategoria('Bebidas')">Bebidas</button>
+    </nav>
+
+    <main>
+        <div id="bloco-favoritos" style="display:none">
+            <h2>❤️ Meus Favoritos</h2>
+            <div class="carrossel-wrap" data-cat="Favoritos">
+                <div class="carrossel" id="carrossel-favoritos"></div>
+                <button class="seta-esquerda">◀</button>
+                <button class="seta-direita">▶</button>
+            </div>
+            <div id="favoritos-vazio" class="vazio-fav" style="display:none">Você ainda não favoritou nada 😢<br>Clique
+                no 🤍 dos doces que você ama!</div>
+        </div>
+
+        <h2>Destaques</h2>
+        <div class="carrossel-wrap" data-cat="Destaques">
+            <div class="carrossel" id="carrossel-destaques"></div>
+            <button class="seta-esquerda">◀</button>
+            <button class="seta-direita">▶</button>
+        </div>
+
+        <h2>Copo da Felicidade</h2>
+        <div class="carrossel-wrap" data-cat="Copo">
+            <div class="carrossel" id="carrossel-copo"></div>
+            <button class="seta-esquerda">◀</button>
+            <button class="seta-direita">▶</button>
+        </div>
+
+        <h2>Bolos e Tortas</h2>
+        <div class="carrossel-wrap" data-cat="Bolos">
+            <div class="carrossel" id="carrossel-bolos"></div>
+            <button class="seta-esquerda">◀</button>
+            <button class="seta-direita">▶</button>
+        </div>
+
+        <h2>Milkshakes</h2>
+        <div class="carrossel-wrap" data-cat="Milkshake">
+            <div class="carrossel" id="carrossel-milkshake"></div>
+            <button class="seta-esquerda">◀</button>
+            <button class="seta-direita">▶</button>
+        </div>
+
+        <h2>Açaí</h2>
+        <div class="carrossel-wrap" data-cat="Acai">
+            <div class="carrossel" id="carrossel-acai"></div>
+            <button class="seta-esquerda">◀</button>
+            <button class="seta-direita">▶</button>
+        </div>
+
+        <h2>Bebidas</h2>
+        <div class="carrossel-wrap" data-cat="Bebidas">
+            <div class="carrossel" id="carrossel-bebidas"></div>
+            <button class="seta-esquerda">◀</button>
+            <button class="seta-direita">▶</button>
+        </div>
+
+        <div id="bloco-busca" style="display:none">
+            <h2>Resultado da Busca</h2>
+            <div id="resultado-busca" class="grade-busca"></div>
+            <button onclick="limparBusca()"
+                style="margin-top:10px;background:#fff;border:1px solid #ff6b9d;color:#ff6b9d;padding:8px 16px;border-radius:20px;cursor:pointer">✖
+                Limpar busca</button>
+        </div>
+
+        <section class="info-loja">
+            <h2>Sobre a Tudo Novo</h2>
+            <p>Doces artesanais feitos na hora em Mongaguá - SP. Copo da Felicidade, Vulcão de Nutella, Bolos de Pote e
+                muito mais!</p>
+            <p><b>Horário:</b> Seg a Dom - 11h às 23h | <b>WhatsApp:</b> (13) 97407-8448 | <b>Entrega:</b> Mongaguá e
+                região</p>
+            <p><b>Pagamento:</b> Pix, Cartão de Crédito/Débito e Dinheiro</p>
+        </section>
+    </main>
+
+    <div id="fundo-carrinho" class="fundo" onclick="fecharCarrinho()"></div>
+    <aside id="carrinho-lateral">
+        <div class="carrinho-topo">
+            <h3>🛒 Seu Carrinho</h3>
+            <button onclick="fecharCarrinho()">✖</button>
+        </div>
+        <div id="itens-carrinho"></div>
+        <div class="carrinho-entrega">
+            <label>Tipo de entrega:</label>
+            <select id="tipo-entrega" onchange="atualizarTotal()">
+                <option value="entrega">🚚 Entrega - R$ 5,00</option>
+                <option value="retirada">🏃 Retirada no local - Grátis</option>
+            </select>
+            <input type="text" id="endereco" placeholder="Seu endereço completo...">
+            <input type="text" id="nome-cliente" placeholder="Seu nome...">
+            <input type="text" id="obs" placeholder="Observação... Ex: sem morango">
+            <label>Forma de pagamento:</label>
+            <select id="pagamento" onchange="mostrarPix()">
+                <option value="Pix">Pix</option>
+                <option value="Cartao">Cartão na entrega</option>
+                <option value="Dinheiro">Dinheiro</option>
+            </select>
+            <div id="area-pix" style="display:none">
+                <p><b>Chave Pix:</b> <span id="chave-pix">tudonovo@gmail.com</span></p>
+                <button onclick="copiarPix()">📋 Copiar Chave Pix</button>
+                <p>Após pagar, mande o comprovante no sApp.</p>
+            </div>
+        </div>
+        <div class="carrinho-total">
+            <p>Subtotal: <span id="subtotal">R$ 0,00</span></p>
+            <p>Entrega: <span id="valor-entrega">R$ 5,00</span></p>
+            <p><b>Total: <span id="total">R$ 0,00</span></b></p>
+            <button class="btn-finalizar" onclick="finalizarPedido()">Finalizar no WhatsApp ✅</button>
+            <button class="btn-limpar" onclick="limparCarrinho()">Limpar carrinho</button>
+        </div>
+    </aside>
+
+    <footer>
+        <p>© 2026 Tudo Novo - Mongaguá SP | Feito com ❤️</p>
+        <button class="btn-vendedora" onclick="abrirLoginVendedora()">🔒 Área da Vendedora</button>
+    </footer>
+
+    <!-- LOGIN DA VENDEDORA -->
+    <div id="fundo-vendedora" class="fundo-vendedora" onclick="fecharLoginVendedora()"></div>
+
+    <div id="login-vendedora" class="modal-vendedora">
+        <h3>🔒 Login da Vendedora</h3>
+        <p style="font-size:14px;color:#666;margin:0;">Só você tem acesso. Coloque sua senha:</p>
+        <input type="password" id="senha-vendedora" placeholder="Digite sua senha">
+        <p id="erro-senha" style="color:red;font-size:13px;display:none;">Senha errada, tenta de novo!</p>
+        <button class="btn-entrar" onclick="entrarPainel()">Entrar</button>
+        <button class="btn-voltar" onclick="fecharLoginVendedora()">Voltar para o site</button>
+    </div>
+
+    <!-- PAINEL DA VENDEDORA -->
+    <div id="painel-vendedora" class="modal-vendedora" style="max-width:520px;">
+        <h3>🍰 Painel da Vendedora</h3>
+        <p style="font-size:14px;color:#666;margin:0;">Clique para deixar Disponível ou Esgotado:</p>
+        <div id="lista-painel"></div>
+        <button class="btn-voltar" onclick="fecharPainelVendedora()">Sair do Painel</button>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // ===== LOGIN DA VENDEDORA =====
+        // TROQUE A SENHA AQUI: coloque a senha que você quiser
+        const SENHA_VENDEDORA = "1234";
+
+        function abrirLoginVendedora() {
+            document.getElementById("login-vendedora").style.display = "block";
+            document.getElementById("fundo-vendedora").style.display = "block";
+        }
+        function fecharLoginVendedora() {
+            document.getElementById("login-vendedora").style.display = "none";
+            document.getElementById("fundo-vendedora").style.display = "none";
+        }
+        function entrarPainel() {
+            const senha = document.getElementById("senha-vendedora").value;
+            if (senha === SENHA_VENDEDORA) {
+                document.getElementById("erro-senha").style.display = "none";
+                fecharLoginVendedora();
+                document.getElementById("painel-vendedora").style.display = "block";
+                document.getElementById("fundo-vendedora").style.display = "block";
+                montarPainel();
+            } else {
+                document.getElementById("erro-senha").style.display = "block";
+            }
+        }
+        function fecharPainelVendedora() {
+            document.getElementById("painel-vendedora").style.display = "none";
+            document.getElementById("fundo-vendedora").style.display = "none";
+            document.getElementById("senha-vendedora").value = "";
+        }
+
+        // ===== PAINEL - LIGA COM SEUS PRODUTOS =====
+        // Ele usa a lista PRODUTOS do seu script.js. Se ainda não tiver, usa essa lista de exemplo:
+        function montarPainel() {
+            const lista = document.getElementById("lista-painel");
+            let produtos = (typeof PRODUTOS !== "undefined" && PRODUTOS.length) ? PRODUTOS : [
+                { id: 1, nome: "Vulcão Nutella", disponivel: true },
+                { id: 2, nome: "Copo Red Velvet", disponivel: true },
+                { id: 3, nome: "Copo Nutella com Ninho", disponivel: true }
+            ];
+            lista.innerHTML = "";
+            produtos.forEach(p => {
+                const div = document.createElement("div");
+                div.className = "item-painel";
+                div.innerHTML = `<b>${p.nome}</b>
+                <button class="${p.disponivel ? 'btn-disponivel' : 'btn-esgotado'}" onclick="alternarDisponivel(${p.id}, this)">${p.disponivel ? '✅ Disponível' : '⛔ Esgotado'}</button>`;
+                lista.appendChild(div);
+            });
+        }
+        function alternarDisponivel(id, botao) {
+            if (typeof PRODUTOS !== "undefined") {
+                const p = PRODUTOS.find(x => x.id === id);
+                if (p) { p.disponivel = !p.disponivel; }
+            }
+            const estaDisponivel = botao.textContent.includes("Disponível");
+            if (estaDisponivel) {
+                botao.textContent = "⛔ Esgotado";
+                botao.className = "btn-esgotado";
+            } else {
+                botao.textContent = "✅ Disponível";
+                botao.className = "btn-disponivel";
+            }
+            // Se seu script.js tiver função para atualizar a vitrine, ela será chamada aqui
+            if (typeof renderizarProdutos === "function") renderizarProdutos();
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Pagamento</h1>
+    <div id="resumoPedido"></div>
+    <h2 id="totalFinal"></h2>
+    <button class="pag-btn" id="btn-pix" onclick="escolherPagamento('pix')">Pix</button>
+    <button class="pag-btn" id="btn-dinheiro" onclick="escolherPagamento('dinheiro')">Dinheiro</button>
+    <button class="pag-btn" id="btn-cartao" onclick="escolherPagamento('cartao')">Cartão</button>
+    <div id="areaPix" class="escondido">
+        <p>Chave Pix: sua-chave-aqui</p>
+    </div>
+    <div id="areaDinheiro" class="escondido"><input id="troco" placeholder="Troco para quanto?"></div>
+    <div id="areaCartao" class="escondido">
+        <p>Pagamento na entrega / retirada</p>
+    </div>
+    <br><button onclick="finalizarPedido()">Finalizar Pedido</button>
+    <script src="script.js"></script>
+</body>
+
+</html>

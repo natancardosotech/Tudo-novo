@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brasa & Pão - Lanches</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ===== HEADER - IGUAL O SEU ===== -->
+    <header>
+        <div class="logo">BRASA <span>& PÃO</span></div>
+
+        <input type="text" id="busca" placeholder="Buscar lanche, bebida, porção..." oninput="buscarProduto()">
+
+        <div class="header-btns">
+            <button onclick="abrirFavoritos()">❤️ Favoritos <span id="countFav">0</span></button>
+            <button onclick="abrirCarrinho()">🛒 Carrinho <span id="countCart">0</span></button>
+        </div>
+    </header>
+
+    <!-- ===== BANNER ABAIXO DO HEADER ===== -->
+    <section class="banner-topo">
+        <img src="banner.jpg" alt="Brasa & Pão">
+        <div class="banner-texto">
+            <h1>🔥 BRASA & PÃO</h1>
+            <p>O melhor lanche de Mongaguá!</p>
+            <a href="#vitrine">Ver Cardápio 👇</a>
+        </div>
+    </section>
+
+    <!-- ===== CATEGORIAS - IGUAL O SEU ===== -->
+    <div class="categorias">
+        <button class="ativo" onclick="filtrarPorCategoria('Todos', this)">Todos</button>
+        <button onclick="filtrarPorCategoria('Lanches', this)">🍔 Lanches</button>
+        <button onclick="filtrarPorCategoria('Bebidas', this)">🥤 Bebidas</button>
+        <button onclick="filtrarPorCategoria('Porções', this)">🍟 Porções</button>
+        <button onclick="filtrarPorCategoria('Sobremesas', this)">🍰 Sobremesas</button>
+    </div>
+
+    <!-- ===== CARROSSÉIS - CORRIGIDO IGUAL TUDO NOVO ===== -->
+    <main>
+        <h2>🔥 Destaques</h2>
+        <div class="carrossel-wrap" data-cat="Destaques">
+            <button class="seta-esquerda">❮</button>
+            <div class="carrossel" id="carrossel-destaques"></div>
+            <button class="seta-direita">❯</button>
+        </div>
+
+        <h2>🍔 Lanches</h2>
+        <div class="carrossel-wrap" data-cat="Lanches">
+            <button class="seta-esquerda">❮</button>
+            <div class="carrossel" id="carrossel-lanches"></div>
+            <button class="seta-direita">❯</button>
+        </div>
+
+        <h2>🥤 Bebidas</h2>
+        <div class="carrossel-wrap" data-cat="Bebidas">
+            <button class="seta-esquerda">❮</button>
+            <div class="carrossel" id="carrossel-bebidas"></div>
+            <button class="seta-direita">❯</button>
+        </div>
+
+        <h2>🍟 Porções</h2>
+        <div class="carrossel-wrap" data-cat="Porções">
+            <button class="seta-esquerda">❮</button>
+            <div class="carrossel" id="carrossel-porcoes"></div>
+            <button class="seta-direita">❯</button>
+        </div>
+
+        <h2>🍰 Sobremesas</h2>
+        <div class="carrossel-wrap" data-cat="Sobremesas">
+            <button class="seta-esquerda">❮</button>
+            <div class="carrossel" id="carrossel-sobremesas"></div>
+            <button class="seta-direita">❯</button>
+        </div>
+
+        <div id="bloco-favoritos">
+            <h2>❤️ Favoritos</h2>
+            <div class="carrossel-wrap" data-cat="Favoritos">
+                <button class="seta-esquerda">❮</button>
+                <div class="carrossel" id="carrossel-favoritos"></div>
+                <button class="seta-direita">❯</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== MODAL CARRINHO - IGUAL O SEU ===== -->
+    <div id="carrinhoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🛒 Seu Pedido</h2>
+                <button onclick="fecharCarrinho()">X</button>
+            </div>
+
+            <div id="itensCarrinho"></div>
+
+            <div class="entrega-opcoes">
+                <label>
+                    <input type="radio" name="tipo" value="Entrega" checked onchange="calcularTotal()"> Entrega - R$
+                    5,00
+                </label>
+                <label>
+                    <input type="radio" name="tipo" value="Retirada" onchange="calcularTotal()"> Retirada - Grátis
+                </label>
+            </div>
+
+            <input id="nomeCliente" placeholder="Seu nome *">
+            <input id="enderecoCliente" placeholder="Seu endereço (se for entrega)">
+            <input id="obsCliente" placeholder="Observação (ex: sem cebola)">
+
+            <div class="totais">
+                <p>Subtotal: <b id="subtotal">R$ 0,00</b></p>
+                <p>Entrega: <b id="valorEntrega">R$ 5,00</b></p>
+                <p class="total">Total: <b id="totalFinal">R$ 0,00</b></p>
+            </div>
+
+            <div class="pix-box">
+                <p>💳 Pagamento via PIX</p>
+                <p>Chave: <b>brasaepao@email.com</b></p>
+                <button onclick="copiarPIX()">Copiar PIX</button>
+            </div>
+
+            <button class="finalizar" onclick="finalizarPedido()">📲 Enviar Pedido para WhatsApp</button>
+        </div>
+    </div>
+
+    <!-- ===== MODAL FAVORITOS - IGUAL O SEU ===== -->
+    <div id="favModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>❤️ Meus Favoritos</h2>
+                <button onclick="fecharFavoritos()">X</button>
+            </div>
+            <div id="itensFavoritos"></div>
+        </div>
+    </div>
+
+    <!-- ===== FOOTER + ADMIN - IGUAL O SEU ===== -->
+    <footer>
+        <p>🔥 Brasa & Pão - Aberto das 18h às 23h</p>
+        <p>📍 Mongaguá - SP | 📲 WhatsApp: (11) XXXXX-XXXX</p>
+        <button onclick="loginAdmin()">🔐 Área Admin</button>
+        <div id="adminArea" style="display:none; margin-top:15px; text-align:left;"></div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

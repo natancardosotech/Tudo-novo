@@ -57,15 +57,15 @@ h2 { margin: 25px 0 12px 0; color: #333; font-size: 20px; border-left: 4px solid
 }
 .btn-fav.ativo { background: #ffe0ec; }
 
-/* ============ SETINHA DO CARROSSEL - IGUAL 2ª IMAGEM ============ */
+/* ============ SETINHA DO CARROSSEL - MAIOR + COR #ff35a2e6 ============ */
 .seta-esquerda, .seta-direita {
   position: absolute; top: 50%; transform: translateY(-50%);
-  width: 32px; height: 32px; border-radius: 50%; background: #fff;
-  color: #333; border: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  font-size: 13px; cursor: pointer; z-index: 5;
+  width: 48px; height: 48px; border-radius: 50%; background: #ff35a2e6;
+  color: #fff; border: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  font-size: 20px; cursor: pointer; z-index: 5;
   display: flex; align-items: center; justify-content: center;
 }
-.seta-esquerda:hover, .seta-direita:hover { background: #fff; color: #333; }
+.seta-esquerda:hover, .seta-direita:hover { background: #ff35a2e6; color: #fff; }
 .seta-esquerda { left: 6px; } .seta-direita { right: 6px; }
 
 /* BUSCA - MESMO ESTILO DO CARD DE ANTES */

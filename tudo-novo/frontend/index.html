@@ -83,11 +83,13 @@
             padding: 10px 0;
             border-bottom: 1px solid #eee;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .item-painel b {
             flex: 1;
             font-size: 14px;
+            min-width: 140px;
         }
 
         .item-painel button {
@@ -110,6 +112,59 @@
             max-height: 350px;
             overflow-y: auto;
             margin-top: 10px;
+        }
+
+        /* ===== CONTROLE - NÚMERO + - SÓ NO PAINEL ===== */
+        .controle-estoque {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .controle-estoque button {
+            width: 32px !important;
+            height: 32px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            background: #ff6b9d !important;
+            color: #fff !important;
+            font-size: 18px !important;
+            line-height: 1 !important;
+        }
+
+        .num-estoque {
+            min-width: 30px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 15px;
+            background: #fff7f0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 5px 6px;
+        }
+
+        .status-painel {
+            font-size: 12px;
+            min-width: 90px;
+            text-align: right;
+        }
+
+        /* ===== BOLINHA VERMELHA - ESTOQUE BAIXO OU ESGOTADO ===== */
+        .bolinha-vermelha {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #ff0000;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+            box-shadow: 0 0 5px #ff0000;
+        }
+
+        .legenda-bolinha {
+            font-size: 12px;
+            color: #666;
+            margin: 6px 0 0;
         }
     </style>
 </head>
@@ -270,15 +325,16 @@
     <!-- PAINEL DA VENDEDORA -->
     <div id="painel-vendedora" class="modal-vendedora" style="max-width:520px;">
         <h3>🍰 Painel da Vendedora</h3>
-        <p style="font-size:14px;color:#666;margin:0;">Clique para deixar Disponível ou Esgotado:</p>
+        <p style="font-size:14px;color:#666;margin:0;">Use - e + para mudar o estoque. Cliente só vê Disponível /
+            Esgotado:</p>
+        <p class="legenda-bolinha"><span class="bolinha-vermelha"></span> = 5 ou menos, ou esgotado - tá acabando!</p>
         <div id="lista-painel"></div>
         <button class="btn-voltar" onclick="fecharPainelVendedora()">Sair do Painel</button>
     </div>
 
     <script src="script.js"></script>
     <script>
-        // ===== LOGIN DA VENDEDORA =====
-        // TROQUE A SENHA AQUI: coloque a senha que você quiser
+        // ===== PAINEL.JS DENTRO DO HTML - PRA NÃO DAR ERRO DE ARQUIVO =====
         const SENHA_VENDEDORA = "1234";
 
         function abrirLoginVendedora() {
@@ -306,42 +362,97 @@
             document.getElementById("fundo-vendedora").style.display = "none";
             document.getElementById("senha-vendedora").value = "";
         }
+        function getEstoquePainel(id) {
+            let estoques = {};
+            try { estoques = JSON.parse(localStorage.getItem('estoquesTudoNovo') || '{}'); } catch (e) { }
+            if (estoques[id] === undefined) estoques[id] = 10;
+            return estoques[id];
+        }
+        function salvarEstoquePainel(id, novo) {
+            let estoquesSalvos = {};
+            try { estoquesSalvos = JSON.parse(localStorage.getItem('estoquesTudoNovo') || '{}'); } catch (e) { }
+            estoquesSalvos[id] = novo;
+            localStorage.setItem('estoquesTudoNovo', JSON.stringify(estoquesSalvos));
 
-        // ===== PAINEL - LIGA COM SEUS PRODUTOS =====
-        // Ele usa a lista PRODUTOS do seu script.js. Se ainda não tiver, usa essa lista de exemplo:
+            // CORREÇÃO AUTOMÁTICA: atualiza a memória que o site está usando agora, sem precisar dar F5
+            try {
+                if (typeof estoques !== 'undefined' && estoques) estoques[id] = novo;
+            } catch (e) { }
+            try {
+                if (typeof window !== 'undefined' && window.estoques) window.estoques[id] = novo;
+            } catch (e) { }
+            // Atualiza também o produto direto no PRODUTOS
+            try {
+                if (typeof PRODUTOS !== 'undefined' && PRODUTOS) {
+                    const prod = PRODUTOS.find(p => p.id === id);
+                    if (prod) {
+                        prod.estoque = novo;
+                        prod.disponivel = novo > 0;
+                        prod.esgotado = novo === 0;
+                    }
+                }
+            } catch (e) { }
+
+            if (typeof PRODUTOS !== 'undefined') {
+                const esgotados = PRODUTOS.filter(p => {
+                    const q = p.id === id ? novo : getEstoquePainel(p.id);
+                    return q === 0;
+                }).map(p => p.id);
+                localStorage.setItem('esgotadosTudoNovo', JSON.stringify(esgotados));
+            }
+        }
         function montarPainel() {
             const lista = document.getElementById("lista-painel");
-            let produtos = (typeof PRODUTOS !== "undefined" && PRODUTOS.length) ? PRODUTOS : [
-                { id: 1, nome: "Vulcão Nutella", disponivel: true },
-                { id: 2, nome: "Copo Red Velvet", disponivel: true },
-                { id: 3, nome: "Copo Nutella com Ninho", disponivel: true }
-            ];
+            if (!lista) return;
+            const produtosBase = (typeof PRODUTOS !== "undefined" && PRODUTOS.length) ? PRODUTOS : [];
+            // ORDEM ALFABÉTICA A-Z - NÃO MUDA A ORDEM DO SITE, SÓ DO PAINEL
+            const produtos = [...produtosBase].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
             lista.innerHTML = "";
             produtos.forEach(p => {
+                const qtd = getEstoquePainel(p.id);
+                const status = qtd > 0 ? '✅ Disponível' : '⛔ Esgotado';
+                // BOLINHA VERMELHA: 5 ou menos, ou zerado
+                const bolinha = qtd <= 5 ? `<span class="bolinha-vermelha" id="bolinha-${p.id}"></span>` : `<span class="bolinha-vermelha" id="bolinha-${p.id}" style="display:none"></span>`;
                 const div = document.createElement("div");
                 div.className = "item-painel";
-                div.innerHTML = `<b>${p.nome}</b>
-                <button class="${p.disponivel ? 'btn-disponivel' : 'btn-esgotado'}" onclick="alternarDisponivel(${p.id}, this)">${p.disponivel ? '✅ Disponível' : '⛔ Esgotado'}</button>`;
+                div.innerHTML = `
+      <b>${bolinha}${p.nome}</b>
+      <div class="controle-estoque">
+        <button onclick="alterarEstoquePainel(${p.id}, -1)">-</button>
+        <span class="num-estoque" id="num-${p.id}">${qtd}</span>
+        <button onclick="alterarEstoquePainel(${p.id}, 1)">+</button>
+      </div>
+      <span class="status-painel" id="status-${p.id}">${status}</span>
+    `;
                 lista.appendChild(div);
             });
         }
-        function alternarDisponivel(id, botao) {
-            if (typeof PRODUTOS !== "undefined") {
-                const p = PRODUTOS.find(x => x.id === id);
-                if (p) { p.disponivel = !p.disponivel; }
+        function alterarEstoquePainel(id, delta) {
+            let novo = getEstoquePainel(id) + delta;
+            if (novo < 0) novo = 0;
+            if (novo > 999) novo = 999;
+            salvarEstoquePainel(id, novo);
+            const elNum = document.getElementById(`num-${id}`);
+            const elStatus = document.getElementById(`status-${id}`);
+            const elBolinha = document.getElementById(`bolinha-${id}`);
+            if (elNum) elNum.textContent = novo;
+            if (elStatus) elStatus.textContent = novo > 0 ? '✅ Disponível' : '⛔ Esgotado';
+            // Atualiza a bolinha na hora também, sem precisar fechar o painel
+            if (elBolinha) elBolinha.style.display = novo <= 5 ? 'inline-block' : 'none';
+
+            // CORREÇÃO AUTOMÁTICA: força o site redesenhar na hora, sem a setinha
+            try {
+                if (typeof estoques !== 'undefined' && estoques) estoques[id] = novo;
+            } catch (e) { }
+            if (typeof aplicarEstoques === 'function') aplicarEstoques();
+            if (typeof renderizarProdutos === 'function') renderizarProdutos();
+            if (typeof renderizarFavoritos === 'function') renderizarFavoritos();
+            if (typeof filtrarCategoria === 'function') {
+                try { filtrarCategoria('Todos'); } catch (e) { }
             }
-            const estaDisponivel = botao.textContent.includes("Disponível");
-            if (estaDisponivel) {
-                botao.textContent = "⛔ Esgotado";
-                botao.className = "btn-esgotado";
-            } else {
-                botao.textContent = "✅ Disponível";
-                botao.className = "btn-disponivel";
-            }
-            // Se seu script.js tiver função para atualizar a vitrine, ela será chamada aqui
-            if (typeof renderizarProdutos === "function") renderizarProdutos();
         }
     </script>
+
 </body>
 
 </html>

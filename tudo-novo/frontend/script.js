@@ -1,4 +1,5 @@
-// ============ TUDO NOVO - COMPLETO COM FAVORITOS + BEBIDAS + BUSCA ESCONDIDA + VENDEDORA ============
+// ============ TUDO NOVO - COMPLETO 91 ITENS - SÓ SITE ============
+// Painel fica no arquivo painel.js separado
 const PRODUTOS = [
   { id: 1, nome: "Vulcão de Nutella", preco: 28.90, categoria: "Destaques", desc: "Bolo quentinho com Nutella", img: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600", disponivel: true },
   { id: 2, nome: "Copo da Felicidade", preco: 24.90, categoria: "Destaques", desc: "Camadas de brigadeiro e morango", img: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=600", disponivel: true },
@@ -95,88 +96,35 @@ const PRODUTOS = [
 const WHATSAPP = "5513974078448";
 const CHAVE_PIX = "tudonovo@gmail.com";
 
-// ============ VENDEDORA - SENHA E DISPONIBILIDADE ============
-// Senha criptografada com SHA-256 - não aparece mais o 1234 no código
-const SENHA_HASH = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
-
-async function criptografarSenha(senha) {
-  const dados = new TextEncoder().encode(senha);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', dados);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// Carrega o que a vendedora marcou como esgotado (fica salvo no celular)
-let esgotados = JSON.parse(localStorage.getItem('esgotadosTudoNovo') || '[]');
-function aplicarEsgotados() {
+// ============ ESTOQUE - NECESSÁRIO P/ O PAINEL CONVERSAR COM O SITE ============
+// O site só LÊ o estoque aqui. Quem MUDA o número é o painel.js
+// Cliente nunca vê o número, só Disponível / Esgotado
+let estoques = JSON.parse(localStorage.getItem('estoquesTudoNovo') || '{}');
+if (Object.keys(estoques).length === 0) {
+  const antigosEsgotados = JSON.parse(localStorage.getItem('esgotadosTudoNovo') || '[]');
   PRODUTOS.forEach(p => {
-    p.disponivel = !esgotados.includes(p.id);
+    estoques[p.id] = antigosEsgotados.includes(p.id) ? 0 : 10;
+  });
+  localStorage.setItem('estoquesTudoNovo', JSON.stringify(estoques));
+}
+function getEstoque(id) {
+  if (estoques[id] === undefined) estoques[id] = 10;
+  return estoques[id];
+}
+function aplicarEstoques() {
+  PRODUTOS.forEach(p => {
+    p.estoque = getEstoque(p.id);
+    p.disponivel = p.estoque > 0;
   });
 }
-function salvarEsgotados() {
-  localStorage.setItem('esgotadosTudoNovo', JSON.stringify(esgotados));
+function salvarEstoques() {
+  localStorage.setItem('estoquesTudoNovo', JSON.stringify(estoques));
+  const listaEsgotados = PRODUTOS.filter(p => getEstoque(p.id) === 0).map(p => p.id);
+  localStorage.setItem('esgotadosTudoNovo', JSON.stringify(listaEsgotados));
 }
-aplicarEsgotados();
+aplicarEstoques();
 
-function abrirLoginVendedora() {
-  document.getElementById("login-vendedora").style.display = "block";
-  document.getElementById("fundo-vendedora").style.display = "block";
-}
-function fecharLoginVendedora() {
-  document.getElementById("login-vendedora").style.display = "none";
-  document.getElementById("fundo-vendedora").style.display = "none";
-}
-
-// >>> ÚNICA PARTE QUE MUDOU - AGORA USA O HASH <<<
-async function entrarPainel() {
-  const senha = document.getElementById("senha-vendedora").value;
-  const hashDigitado = await criptografarSenha(senha);
-  if (hashDigitado === SENHA_HASH) {
-    document.getElementById("erro-senha").style.display = "none";
-    fecharLoginVendedora();
-    document.getElementById("painel-vendedora").style.display = "block";
-    document.getElementById("fundo-vendedora").style.display = "block";
-    montarPainel();
-  } else {
-    document.getElementById("erro-senha").style.display = "block";
-  }
-}
-function fecharPainelVendedora() {
-  document.getElementById("painel-vendedora").style.display = "none";
-  document.getElementById("fundo-vendedora").style.display = "none";
-  document.getElementById("senha-vendedora").value = "";
-}
-function montarPainel() {
-  const lista = document.getElementById("lista-painel");
-  if (!lista) return;
-  lista.innerHTML = "";
-  PRODUTOS.forEach(p => {
-    const div = document.createElement("div");
-    div.className = "item-painel";
-    div.innerHTML = `<b>${p.nome}</b>
-    <button class="${p.disponivel ? 'btn-disponivel' : 'btn-esgotado'}" onclick="alternarDisponivel(${p.id}, this)">${p.disponivel ? '✅ Disponível' : '⛔ Esgotado'}</button>`;
-    lista.appendChild(div);
-  });
-}
-function alternarDisponivel(id, botao) {
-  const p = PRODUTOS.find(x => x.id === id);
-  if (!p) return;
-  p.disponivel = !p.disponivel;
-  if (p.disponivel) {
-    esgotados = esgotados.filter(e => e !== id);
-    botao.textContent = "✅ Disponível";
-    botao.className = "btn-disponivel";
-  } else {
-    if (!esgotados.includes(id)) esgotados.push(id);
-    botao.textContent = "⛔ Esgotado";
-    botao.className = "btn-esgotado";
-  }
-  salvarEsgotados();
-  renderizarProdutos();
-  renderizarFavoritos();
-}
-
-// FAVORITOS - SALVO NO CELULAR DO CLIENTE
+// FAVORITOS
 let favoritos = JSON.parse(localStorage.getItem('favoritosTudoNovo') || '[]');
 function isFavorito(id) { return favoritos.includes(id); }
 function salvarFavoritos() { localStorage.setItem('favoritosTudoNovo', JSON.stringify(favoritos)); }
@@ -317,7 +265,7 @@ function filtrarCategoria(cat) {
   }
 }
 
-// RENDERIZAR PRODUTOS - CARDS COMO ANTES + CORAÇÃO + ESGOTADO
+// RENDERIZAR PRODUTOS - CLIENTE NÃO VÊ ESTOQUE, SÓ DISPONÍVEL / ESGOTADO
 function criarCard(p) {
   const fav = isFavorito(p.id);
   const esgotado = !p.disponivel;
@@ -365,7 +313,7 @@ function renderizarProdutos() {
   });
 }
 
-// ============ CARROSSEL - PERFEITO, COM CORREÇÃO PRA 1 IMAGEM ============
+// CARROSSEL
 function criarCarrossel(car) {
   const track = car;
   const cards = car.querySelectorAll('.card');

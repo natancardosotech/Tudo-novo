@@ -7,7 +7,6 @@
     <title>Tudo Novo - Sobremesas e Doces</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Estilo do Login e Painel da Vendedora */
         .fundo-vendedora {
             display: none;
             position: fixed;
@@ -23,12 +22,14 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: #fff;
-            padding: 25px;
+            padding: 20px;
             border-radius: 16px;
             width: 90%;
             max-width: 420px;
             z-index: 1000;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-height: 92vh;
+            overflow-y: auto;
         }
 
         .modal-vendedora h3 {
@@ -109,12 +110,11 @@
         }
 
         #lista-painel {
-            max-height: 350px;
+            max-height: 300px;
             overflow-y: auto;
             margin-top: 10px;
         }
 
-        /* ===== CONTROLE - NÚMERO + - SÓ NO PAINEL ===== */
         .controle-estoque {
             display: flex;
             align-items: center;
@@ -149,7 +149,6 @@
             text-align: right;
         }
 
-        /* ===== BOLINHA VERMELHA - ESTOQUE BAIXO OU ESGOTADO ===== */
         .bolinha-vermelha {
             display: inline-block;
             width: 12px;
@@ -165,6 +164,123 @@
             font-size: 12px;
             color: #666;
             margin: 6px 0 0;
+        }
+
+        /* ===== CONTROLES LADO A LADO ===== */
+        .controles-topo {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .box-loja,
+        .box-entrega {
+            flex: 1;
+            border-radius: 12px;
+            padding: 10px 8px;
+            text-align: center;
+        }
+
+        .box-loja {
+            background: #fff7f0;
+            border: 2px solid #ff6b9d;
+        }
+
+        .box-entrega {
+            background: #fffbe6;
+            border: 2px solid #ff9800;
+        }
+
+        .box-loja h4,
+        .box-entrega h4 {
+            margin: 0 0 6px;
+            color: #333;
+            font-size: 13px;
+        }
+
+        #status-loja-painel,
+        #status-entrega-painel {
+            font-weight: bold;
+            font-size: 12px;
+            margin: 4px 0 8px;
+            line-height: 1.2;
+            min-height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #btn-alternar-loja,
+        #btn-alternar-entrega {
+            font-size: 12px !important;
+            padding: 10px 4px !important;
+            line-height: 1.2;
+        }
+
+        .btn-fechar-loja,
+        .btn-pausar-entrega {
+            background: #e91e63 !important;
+            color: #fff !important;
+        }
+
+        .btn-abrir-loja,
+        .btn-ligar-entrega {
+            background: #28a745 !important;
+            color: #fff !important;
+        }
+
+        /* ===== BUSCA DENTRO DO PAINEL ===== */
+        .busca-painel {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin: 10px 0 4px;
+        }
+
+        .busca-painel input {
+            flex: 1;
+            margin: 0 !important;
+            border: 2px solid #ff6b9d !important;
+        }
+
+        .busca-painel button {
+            width: 44px !important;
+            margin: 0 !important;
+            padding: 12px 0 !important;
+            background: #eee !important;
+            color: #333 !important;
+        }
+
+        #nenhum-painel {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            padding: 15px 0;
+            display: none;
+        }
+
+        /* ===== AVISO SÓ RETIRADA NO CARRINHO - PASSO 2 ===== */
+        .aviso-so-retirada {
+            display: none;
+            background: #fff3cd;
+            border: 2px solid #ff9800;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #664d03;
+        }
+
+        .aviso-so-retirada b {
+            font-size: 14px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .aviso-so-retirada span {
+            font-size: 12px;
+            line-height: 1.4;
+            display: block;
         }
     </style>
 </head>
@@ -183,7 +299,18 @@
         </div>
     </header>
 
-    <div class="faixa">🚚 Entrega rápida em Mongaguá | 🍫 Feito na hora | 💳 Pix, Cartão e Dinheiro</div>
+    <div id="aviso-fechado"
+        style="display:none; background:#e91e63; color:#fff; text-align:center; padding:10px; font-weight:700;">
+        Estamos fechados no momento! Atenderemos amanhã a partir das 10h às 18h! 😴
+    </div>
+
+    <!-- ===== FAIXA AMARELA SÓ RETIRADA - PASSO 2 ===== -->
+    <div id="aviso-sem-entrega"
+        style="display:none; background:#ff9800; color:#fff; text-align:center; padding:10px; font-weight:700;">
+        ⚠️ Hoje trabalharemos apenas com retirada no local. Entregas temporariamente indisponíveis.
+    </div>
+
+    <div class="faixa">🚚 Entrega rápida em Mongaguá | 🍫 Feito na hora | 💳 Pix, Cartão de Débito/Crédito</div>
 
     <nav class="categorias">
         <button onclick="filtrarCategoria('Todos')" class="ativo">Todos</button>
@@ -210,44 +337,33 @@
 
         <h2>Destaques</h2>
         <div class="carrossel-wrap" data-cat="Destaques">
-            <div class="carrossel" id="carrossel-destaques"></div>
-            <button class="seta-esquerda">◀</button>
-            <button class="seta-direita">▶</button>
+            <div class="carrossel" id="carrossel-destaques"></div><button class="seta-esquerda">◀</button><button
+                class="seta-direita">▶</button>
         </div>
-
         <h2>Copo da Felicidade</h2>
         <div class="carrossel-wrap" data-cat="Copo">
-            <div class="carrossel" id="carrossel-copo"></div>
-            <button class="seta-esquerda">◀</button>
-            <button class="seta-direita">▶</button>
+            <div class="carrossel" id="carrossel-copo"></div><button class="seta-esquerda">◀</button><button
+                class="seta-direita">▶</button>
         </div>
-
         <h2>Bolos e Tortas</h2>
         <div class="carrossel-wrap" data-cat="Bolos">
-            <div class="carrossel" id="carrossel-bolos"></div>
-            <button class="seta-esquerda">◀</button>
-            <button class="seta-direita">▶</button>
+            <div class="carrossel" id="carrossel-bolos"></div><button class="seta-esquerda">◀</button><button
+                class="seta-direita">▶</button>
         </div>
-
         <h2>Milkshakes</h2>
         <div class="carrossel-wrap" data-cat="Milkshake">
-            <div class="carrossel" id="carrossel-milkshake"></div>
-            <button class="seta-esquerda">◀</button>
-            <button class="seta-direita">▶</button>
+            <div class="carrossel" id="carrossel-milkshake"></div><button class="seta-esquerda">◀</button><button
+                class="seta-direita">▶</button>
         </div>
-
         <h2>Açaí</h2>
         <div class="carrossel-wrap" data-cat="Acai">
-            <div class="carrossel" id="carrossel-acai"></div>
-            <button class="seta-esquerda">◀</button>
-            <button class="seta-direita">▶</button>
+            <div class="carrossel" id="carrossel-acai"></div><button class="seta-esquerda">◀</button><button
+                class="seta-direita">▶</button>
         </div>
-
         <h2>Bebidas</h2>
         <div class="carrossel-wrap" data-cat="Bebidas">
-            <div class="carrossel" id="carrossel-bebidas"></div>
-            <button class="seta-esquerda">◀</button>
-            <button class="seta-direita">▶</button>
+            <div class="carrossel" id="carrossel-bebidas"></div><button class="seta-esquerda">◀</button><button
+                class="seta-direita">▶</button>
         </div>
 
         <div id="bloco-busca" style="display:none">
@@ -262,20 +378,25 @@
             <h2>Sobre a Tudo Novo</h2>
             <p>Doces artesanais feitos na hora em Mongaguá - SP. Copo da Felicidade, Vulcão de Nutella, Bolos de Pote e
                 muito mais!</p>
-            <p><b>Horário:</b> Seg a Dom - 11h às 23h | <b>WhatsApp:</b> (13) 97407-8448 | <b>Entrega:</b> Mongaguá e
+            <p><b>Horário:</b> Seg a Dom - 10h às 18h | <b>WhatsApp:</b> (13) 97407-8448 | <b>Entrega:</b> Mongaguá e
                 região</p>
-            <p><b>Pagamento:</b> Pix, Cartão de Crédito/Débito e Dinheiro</p>
+            <p><b>Pagamento:</b> Cartão de Débito/Crédito e Pix</p>
         </section>
     </main>
 
     <div id="fundo-carrinho" class="fundo" onclick="fecharCarrinho()"></div>
     <aside id="carrinho-lateral">
         <div class="carrinho-topo">
-            <h3>🛒 Seu Carrinho</h3>
-            <button onclick="fecharCarrinho()">✖</button>
+            <h3>🛒 Seu Carrinho</h3><button onclick="fecharCarrinho()">✖</button>
         </div>
         <div id="itens-carrinho"></div>
         <div class="carrinho-entrega">
+            <!-- ===== AVISO SÓ RETIRADA DENTRO DO CARRINHO ===== -->
+            <div id="aviso-so-retirada-carrinho" class="aviso-so-retirada">
+                <b>🏃 Hoje só retirada!</b>
+                <span>Hoje trabalharemos apenas com retirada no local.<br>Entregas temporariamente
+                    indisponíveis.<br>Agradecemos a compreensão!</span>
+            </div>
             <label>Tipo de entrega:</label>
             <select id="tipo-entrega" onchange="atualizarTotal()">
                 <option value="entrega">🚚 Entrega - R$ 5,00</option>
@@ -288,12 +409,11 @@
             <select id="pagamento" onchange="mostrarPix()">
                 <option value="Pix">Pix</option>
                 <option value="Cartao">Cartão na entrega</option>
-                <option value="Dinheiro">Dinheiro</option>
             </select>
             <div id="area-pix" style="display:none">
-                <p><b>Chave Pix:</b> <span id="chave-pix">tudonovo@gmail.com</span></p>
+                <p><b>Chave Pix:</b> <span id="chave-pix">44.606.808/0001-92</span></p>
                 <button onclick="copiarPix()">📋 Copiar Chave Pix</button>
-                <p>Após pagar, mande o comprovante no sApp.</p>
+                <p>Após pagar, mande o comprovante no WhatsApp.</p>
             </div>
         </div>
         <div class="carrinho-total">
@@ -310,9 +430,7 @@
         <button class="btn-vendedora" onclick="abrirLoginVendedora()">🔒 Área da Vendedora</button>
     </footer>
 
-    <!-- LOGIN DA VENDEDORA -->
     <div id="fundo-vendedora" class="fundo-vendedora" onclick="fecharLoginVendedora()"></div>
-
     <div id="login-vendedora" class="modal-vendedora">
         <h3>🔒 Login da Vendedora</h3>
         <p style="font-size:14px;color:#666;margin:0;">Só você tem acesso. Coloque sua senha:</p>
@@ -321,138 +439,197 @@
         <button class="btn-entrar" onclick="entrarPainel()">Entrar</button>
         <button class="btn-voltar" onclick="fecharLoginVendedora()">Voltar para o site</button>
     </div>
-
-    <!-- PAINEL DA VENDEDORA -->
     <div id="painel-vendedora" class="modal-vendedora" style="max-width:520px;">
         <h3>🍰 Painel da Vendedora</h3>
+        <div class="controles-topo">
+            <div class="box-loja">
+                <h4>🏪 Loja</h4>
+                <div id="status-loja-painel">🟢 LOJA ABERTA</div>
+                <button id="btn-alternar-loja" class="btn-fechar-loja" onclick="alternarLoja()">🔴 FECHAR LOJA</button>
+            </div>
+            <div class="box-entrega">
+                <h4>🚚 Entrega</h4>
+                <div id="status-entrega-painel">🟢 ENTREGA LIGADA</div>
+                <button id="btn-alternar-entrega" class="btn-pausar-entrega" onclick="alternarEntrega()">🔴 PAUSAR
+                    ENTREGA</button>
+            </div>
+        </div>
+        <div class="busca-painel">
+            <input type="text" id="busca-painel" placeholder="🔍 Pesquisar produto... Ex: Copo, Açaí"
+                oninput="filtrarPainel()">
+            <button onclick="limparBuscaPainel()">✖</button>
+        </div>
         <p style="font-size:14px;color:#666;margin:0;">Use - e + para mudar o estoque. Cliente só vê Disponível /
             Esgotado:</p>
         <p class="legenda-bolinha"><span class="bolinha-vermelha"></span> = 5 ou menos, ou esgotado - tá acabando!</p>
         <div id="lista-painel"></div>
+        <div id="nenhum-painel">Nenhum produto encontrado 😢<br>Tenta outro nome!</div>
         <button class="btn-voltar" onclick="fecharPainelVendedora()">Sair do Painel</button>
     </div>
 
     <script src="script.js"></script>
     <script>
-        // ===== PAINEL.JS DENTRO DO HTML - PRA NÃO DAR ERRO DE ARQUIVO =====
         const SENHA_VENDEDORA = "1234";
-
-        function abrirLoginVendedora() {
-            document.getElementById("login-vendedora").style.display = "block";
-            document.getElementById("fundo-vendedora").style.display = "block";
-        }
-        function fecharLoginVendedora() {
-            document.getElementById("login-vendedora").style.display = "none";
-            document.getElementById("fundo-vendedora").style.display = "none";
-        }
+        function abrirLoginVendedora() { document.getElementById("login-vendedora").style.display = "block"; document.getElementById("fundo-vendedora").style.display = "block"; }
+        function fecharLoginVendedora() { document.getElementById("login-vendedora").style.display = "none"; document.getElementById("fundo-vendedora").style.display = "none"; }
         function entrarPainel() {
             const senha = document.getElementById("senha-vendedora").value;
             if (senha === SENHA_VENDEDORA) {
-                document.getElementById("erro-senha").style.display = "none";
-                fecharLoginVendedora();
-                document.getElementById("painel-vendedora").style.display = "block";
-                document.getElementById("fundo-vendedora").style.display = "block";
-                montarPainel();
-            } else {
-                document.getElementById("erro-senha").style.display = "block";
+                document.getElementById("erro-senha").style.display = "none"; fecharLoginVendedora();
+                document.getElementById("painel-vendedora").style.display = "block"; document.getElementById("fundo-vendedora").style.display = "block";
+                const inp = document.getElementById("busca-painel"); if (inp) inp.value = "";
+                montarPainel(); atualizarBotaoLoja(); atualizarBotaoEntrega();
             }
+            else { document.getElementById("erro-senha").style.display = "block"; }
         }
-        function fecharPainelVendedora() {
-            document.getElementById("painel-vendedora").style.display = "none";
-            document.getElementById("fundo-vendedora").style.display = "none";
-            document.getElementById("senha-vendedora").value = "";
-        }
-        function getEstoquePainel(id) {
-            let estoques = {};
-            try { estoques = JSON.parse(localStorage.getItem('estoquesTudoNovo') || '{}'); } catch (e) { }
-            if (estoques[id] === undefined) estoques[id] = 10;
-            return estoques[id];
-        }
+        function fecharPainelVendedora() { document.getElementById("painel-vendedora").style.display = "none"; document.getElementById("fundo-vendedora").style.display = "none"; document.getElementById("senha-vendedora").value = ""; }
+        function getEstoquePainel(id) { let estoques = {}; try { estoques = JSON.parse(localStorage.getItem('estoquesTudoNovo') || '{}'); } catch (e) { } if (estoques[id] === undefined) estoques[id] = 10; return estoques[id]; }
         function salvarEstoquePainel(id, novo) {
-            let estoquesSalvos = {};
-            try { estoquesSalvos = JSON.parse(localStorage.getItem('estoquesTudoNovo') || '{}'); } catch (e) { }
-            estoquesSalvos[id] = novo;
-            localStorage.setItem('estoquesTudoNovo', JSON.stringify(estoquesSalvos));
-
-            // CORREÇÃO AUTOMÁTICA: atualiza a memória que o site está usando agora, sem precisar dar F5
-            try {
-                if (typeof estoques !== 'undefined' && estoques) estoques[id] = novo;
-            } catch (e) { }
-            try {
-                if (typeof window !== 'undefined' && window.estoques) window.estoques[id] = novo;
-            } catch (e) { }
-            // Atualiza também o produto direto no PRODUTOS
-            try {
-                if (typeof PRODUTOS !== 'undefined' && PRODUTOS) {
-                    const prod = PRODUTOS.find(p => p.id === id);
-                    if (prod) {
-                        prod.estoque = novo;
-                        prod.disponivel = novo > 0;
-                        prod.esgotado = novo === 0;
-                    }
-                }
-            } catch (e) { }
-
-            if (typeof PRODUTOS !== 'undefined') {
-                const esgotados = PRODUTOS.filter(p => {
-                    const q = p.id === id ? novo : getEstoquePainel(p.id);
-                    return q === 0;
-                }).map(p => p.id);
-                localStorage.setItem('esgotadosTudoNovo', JSON.stringify(esgotados));
-            }
+            let estoquesSalvos = {}; try { estoquesSalvos = JSON.parse(localStorage.getItem('estoquesTudoNovo') || '{}'); } catch (e) { }
+            estoquesSalvos[id] = novo; localStorage.setItem('estoquesTudoNovo', JSON.stringify(estoquesSalvos));
+            try { if (typeof estoques !== 'undefined' && estoques) estoques[id] = novo; } catch (e) { }
+            try { if (typeof window !== 'undefined' && window.estoques) window.estoques[id] = novo; } catch (e) { }
+            try { if (typeof PRODUTOS !== 'undefined' && PRODUTOS) { const prod = PRODUTOS.find(p => p.id === id); if (prod) { prod.estoque = novo; prod.disponivel = novo > 0; prod.esgotado = novo === 0; } } } catch (e) { }
+            if (typeof PRODUTOS !== 'undefined') { const esgotados = PRODUTOS.filter(p => { const q = p.id === id ? novo : getEstoquePainel(p.id); return q === 0; }).map(p => p.id); localStorage.setItem('esgotadosTudoNovo', JSON.stringify(esgotados)); }
+        }
+        function normalizarTextoPainel(t) {
+            return (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+        function filtrarPainel() { montarPainel(); }
+        function limparBuscaPainel() {
+            const inp = document.getElementById("busca-painel");
+            if (inp) inp.value = "";
+            montarPainel();
+            if (inp) inp.focus();
         }
         function montarPainel() {
-            const lista = document.getElementById("lista-painel");
-            if (!lista) return;
+            const lista = document.getElementById("lista-painel"); if (!lista) return;
             const produtosBase = (typeof PRODUTOS !== "undefined" && PRODUTOS.length) ? PRODUTOS : [];
-            // ORDEM ALFABÉTICA A-Z - NÃO MUDA A ORDEM DO SITE, SÓ DO PAINEL
-            const produtos = [...produtosBase].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+            let produtos = [...produtosBase].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+            const termo = normalizarTextoPainel(document.getElementById("busca-painel") ? document.getElementById("busca-painel").value : "");
+            if (termo) { produtos = produtos.filter(p => normalizarTextoPainel(p.nome).includes(termo)); }
             lista.innerHTML = "";
+            const msgNenhum = document.getElementById("nenhum-painel");
+            if (produtos.length === 0) { if (msgNenhum) msgNenhum.style.display = "block"; return; }
+            if (msgNenhum) msgNenhum.style.display = "none";
             produtos.forEach(p => {
                 const qtd = getEstoquePainel(p.id);
                 const status = qtd > 0 ? '✅ Disponível' : '⛔ Esgotado';
-                // BOLINHA VERMELHA: 5 ou menos, ou zerado
                 const bolinha = qtd <= 5 ? `<span class="bolinha-vermelha" id="bolinha-${p.id}"></span>` : `<span class="bolinha-vermelha" id="bolinha-${p.id}" style="display:none"></span>`;
-                const div = document.createElement("div");
-                div.className = "item-painel";
-                div.innerHTML = `
-      <b>${bolinha}${p.nome}</b>
-      <div class="controle-estoque">
-        <button onclick="alterarEstoquePainel(${p.id}, -1)">-</button>
-        <span class="num-estoque" id="num-${p.id}">${qtd}</span>
-        <button onclick="alterarEstoquePainel(${p.id}, 1)">+</button>
-      </div>
-      <span class="status-painel" id="status-${p.id}">${status}</span>
-    `;
+                const div = document.createElement("div"); div.className = "item-painel";
+                div.innerHTML = `<b>${bolinha}${p.nome}</b><div class="controle-estoque"><button onclick="alterarEstoquePainel(${p.id}, -1)">-</button><span class="num-estoque" id="num-${p.id}">${qtd}</span><button onclick="alterarEstoquePainel(${p.id}, 1)">+</button></div><span class="status-painel" id="status-${p.id}">${status}</span>`;
                 lista.appendChild(div);
             });
         }
         function alterarEstoquePainel(id, delta) {
-            let novo = getEstoquePainel(id) + delta;
-            if (novo < 0) novo = 0;
-            if (novo > 999) novo = 999;
+            let novo = getEstoquePainel(id) + delta; if (novo < 0) novo = 0; if (novo > 999) novo = 999;
             salvarEstoquePainel(id, novo);
-            const elNum = document.getElementById(`num-${id}`);
-            const elStatus = document.getElementById(`status-${id}`);
-            const elBolinha = document.getElementById(`bolinha-${id}`);
-            if (elNum) elNum.textContent = novo;
-            if (elStatus) elStatus.textContent = novo > 0 ? '✅ Disponível' : '⛔ Esgotado';
-            // Atualiza a bolinha na hora também, sem precisar fechar o painel
-            if (elBolinha) elBolinha.style.display = novo <= 5 ? 'inline-block' : 'none';
-
-            // CORREÇÃO AUTOMÁTICA: força o site redesenhar na hora, sem a setinha
-            try {
-                if (typeof estoques !== 'undefined' && estoques) estoques[id] = novo;
-            } catch (e) { }
+            const elNum = document.getElementById(`num-${id}`); const elStatus = document.getElementById(`status-${id}`); const elBolinha = document.getElementById(`bolinha-${id}`);
+            if (elNum) elNum.textContent = novo; if (elStatus) elStatus.textContent = novo > 0 ? '✅ Disponível' : '⛔ Esgotado'; if (elBolinha) elBolinha.style.display = novo <= 5 ? 'inline-block' : 'none';
+            try { if (typeof estoques !== 'undefined' && estoques) estoques[id] = novo; } catch (e) { }
             if (typeof aplicarEstoques === 'function') aplicarEstoques();
             if (typeof renderizarProdutos === 'function') renderizarProdutos();
             if (typeof renderizarFavoritos === 'function') renderizarFavoritos();
-            if (typeof filtrarCategoria === 'function') {
-                try { filtrarCategoria('Todos'); } catch (e) { }
+            if (typeof filtrarCategoria === 'function') { try { filtrarCategoria('Todos'); } catch (e) { } }
+        }
+        function lojaFechadaManual() { return localStorage.getItem('lojaFechadaManualTudoNovo') === 'true'; }
+        function atualizarBotaoLoja() {
+            const fechada = lojaFechadaManual();
+            const statusEl = document.getElementById("status-loja-painel");
+            const btn = document.getElementById("btn-alternar-loja");
+            if (statusEl) { statusEl.textContent = fechada ? "🔴 LOJA FECHADA" : "🟢 LOJA ABERTA"; statusEl.style.color = fechada ? "#e91e63" : "#28a745"; }
+            if (btn) { btn.textContent = fechada ? "🟢 ABRIR LOJA" : "🔴 FECHAR LOJA"; btn.className = fechada ? "btn-abrir-loja" : "btn-fechar-loja"; }
+        }
+        function alternarLoja() {
+            const fechadaAgora = !lojaFechadaManual();
+            localStorage.setItem('lojaFechadaManualTudoNovo', fechadaAgora ? 'true' : 'false');
+            atualizarBotaoLoja(); verificarHorario(); atualizarEntregaCarrinho();
+            alert(fechadaAgora ? "Loja FECHADA! 🔴\nA faixa vermelha já apareceu para o cliente." : "Loja ABERTA! 🟢\nA faixa vermelha sumiu.");
+        }
+        function entregaPausada() { return localStorage.getItem('entregaPausadaTudoNovo') === 'true'; }
+        function atualizarBotaoEntrega() {
+            const pausada = entregaPausada();
+            const statusEl = document.getElementById("status-entrega-painel");
+            const btn = document.getElementById("btn-alternar-entrega");
+            if (statusEl) { statusEl.textContent = pausada ? "🔴 SÓ RETIRADA" : "🟢 ENTREGA LIGADA"; statusEl.style.color = pausada ? "#e91e63" : "#28a745"; }
+            if (btn) { btn.textContent = pausada ? "🟢 LIGAR ENTREGA" : "🔴 PAUSAR ENTREGA"; btn.className = pausada ? "btn-ligar-entrega" : "btn-pausar-entrega"; }
+        }
+        function alternarEntrega() {
+            const pausadaAgora = !entregaPausada();
+            localStorage.setItem('entregaPausadaTudoNovo', pausadaAgora ? 'true' : 'false');
+            atualizarBotaoEntrega();
+            verificarHorario();
+            atualizarEntregaCarrinho();
+            alert(pausadaAgora ? "Entrega PAUSADA! 🔴\nLoja continua ABERTA, só sem entrega.\nCliente agora só consegue pedir para RETIRADA." : "Entrega LIGADA! 🟢\nCliente já pode pedir entrega de novo.");
+        }
+
+        // ===== PASSO 2: BARRAR ENTREGA NO PAGAMENTO / CARRINHO =====
+        function atualizarEntregaCarrinho() {
+            const pausada = entregaPausada();
+            const hora = new Date().getHours();
+            const abertaPorHorario = hora >= 10 && hora < 18;
+            const lojaAberta = abertaPorHorario && !lojaFechadaManual();
+            // Só mostra aviso de sem entrega se a loja estiver ABERTA. Se fechada, a faixa vermelha já manda.
+            const mostrarSemEntrega = pausada && lojaAberta;
+
+            const faixaTopo = document.getElementById("aviso-sem-entrega");
+            if (faixaTopo) faixaTopo.style.display = mostrarSemEntrega ? "block" : "none";
+
+            const avisoCarrinho = document.getElementById("aviso-so-retirada-carrinho");
+            if (avisoCarrinho) avisoCarrinho.style.display = mostrarSemEntrega ? "block" : "none";
+
+            const selectEntrega = document.getElementById("tipo-entrega");
+            const campoEndereco = document.getElementById("endereco");
+            if (selectEntrega) {
+                const optEntrega = selectEntrega.querySelector('option[value="entrega"]');
+                if (mostrarSemEntrega) {
+                    // Trava em retirada e esconde a opção entrega
+                    if (optEntrega) optEntrega.style.display = "none";
+                    selectEntrega.value = "retirada";
+                    selectEntrega.disabled = true;
+                    selectEntrega.style.opacity = "0.6";
+                    if (campoEndereco) { campoEndereco.style.display = "none"; campoEndereco.value = ""; }
+                    // Muda o texto do pagamento Cartão para não falar "na entrega"
+                    const selPag = document.getElementById("pagamento");
+                    if (selPag) {
+                        const optCartao = selPag.querySelector('option[value="Cartao"]');
+                        if (optCartao) optCartao.textContent = "Cartão na retirada";
+                    }
+                } else {
+                    // Volta ao normal
+                    if (optEntrega) optEntrega.style.display = "";
+                    selectEntrega.disabled = false;
+                    selectEntrega.style.opacity = "1";
+                    if (campoEndereco) campoEndereco.style.display = "";
+                    const selPag = document.getElementById("pagamento");
+                    if (selPag) {
+                        const optCartao = selPag.querySelector('option[value="Cartao"]');
+                        if (optCartao) optCartao.textContent = "Cartão na entrega";
+                    }
+                }
+                if (typeof atualizarTotal === 'function') { try { atualizarTotal(); } catch (e) { } }
             }
         }
-    </script>
 
+        function verificarHorario() {
+            const hora = new Date().getHours();
+            const abertaPorHorario = hora >= 10 && hora < 18;
+            const fechadaManual = lojaFechadaManual();
+            const lojaAberta = abertaPorHorario && !fechadaManual;
+            const aviso = document.getElementById("aviso-fechado");
+            if (aviso) aviso.style.display = lojaAberta ? "none" : "block";
+            const btnFinalizar = document.querySelector(".btn-finalizar");
+            if (btnFinalizar) {
+                if (!lojaAberta) { btnFinalizar.disabled = true; btnFinalizar.style.opacity = "0.5"; btnFinalizar.textContent = "Loja Fechada - Volta amanhã às 10h 😴"; }
+                else { btnFinalizar.disabled = false; btnFinalizar.style.opacity = "1"; btnFinalizar.textContent = "Finalizar no WhatsApp ✅"; }
+            }
+            atualizarEntregaCarrinho();
+        }
+        verificarHorario();
+        atualizarBotaoLoja();
+        atualizarBotaoEntrega();
+        atualizarEntregaCarrinho();
+    </script>
 </body>
 
 </html>

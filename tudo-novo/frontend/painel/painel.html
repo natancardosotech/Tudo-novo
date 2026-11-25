@@ -6,10 +6,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel</title>
     <link rel="stylesheet" href="painel.css">
+    <style>
+        /* Botão Fechar / Abrir Loja */
+        .box-loja {
+            background: #fff7f0;
+            border: 2px solid #ff6b9d;
+            border-radius: 16px;
+            padding: 16px;
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .box-loja h2 {
+            margin: 0 0 8px;
+        }
+
+        #status-loja {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        #btn-loja {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .btn-fechar {
+            background: #e91e63;
+            color: #fff;
+        }
+
+        .btn-abrir {
+            background: #25d366;
+            color: #fff;
+        }
+    </style>
 </head>
 
 <body>
     <h1>Painel Tudo Novo</h1><button onclick="sair()">Sair</button>
+
+    <!-- ===== CONTROLE ABRIR / FECHAR LOJA ===== -->
+    <div class="box-loja">
+        <h2>🏪 Controle da Loja</h2>
+        <p id="status-loja">Carregando...</p>
+        <button id="btn-loja" onclick="alternarLoja()">Carregando...</button>
+        <p style="font-size:13px;color:#666;margin:10px 0 0;">Se fechar manualmente, a faixa vermelha aparece no site na
+            hora, mesmo dentro do horário. Se abrir, volta ao horário normal (10h às 18h).</p>
+    </div>
+
     <h2>Pedidos</h2>
     <div id="lista-pedidos"></div>
     <h2>Produtos</h2>
@@ -21,6 +73,41 @@
             placeholder="Foto: imagens/vulcao/...jpg"><button>Criar Produto</button></form>
     <script src="script.js"></script>
     <script src="painel.js"></script>
+    <script>
+        // ===== ABRIR / FECHAR LOJA - SALVA NO NAVEGADOR =====
+        function lojaFechadaManual() {
+            return localStorage.getItem('lojaFechadaManual') === '1';
+        }
+        function atualizarBotaoLoja() {
+            const fechada = lojaFechadaManual();
+            const status = document.getElementById('status-loja');
+            const btn = document.getElementById('btn-loja');
+            if (!status || !btn) return;
+            if (fechada) {
+                status.textContent = '🔴 LOJA FECHADA NO MOMENTO';
+                status.style.color = '#e91e63';
+                btn.textContent = '🟢 ABRIR LOJA AGORA';
+                btn.className = 'btn-abrir';
+            } else {
+                status.textContent = '🟢 LOJA ABERTA / SEGUINDO HORÁRIO NORMAL';
+                status.style.color = '#25d366';
+                btn.textContent = '🔴 FECHAR LOJA AGORA';
+                btn.className = 'btn-fechar';
+            }
+        }
+        function alternarLoja() {
+            const fechada = lojaFechadaManual();
+            if (fechada) {
+                localStorage.setItem('lojaFechadaManual', '0');
+                alert('Loja ABERTA! ✅\nA faixa vermelha sumiu e o site voltou ao horário normal.');
+            } else {
+                localStorage.setItem('lojaFechadaManual', '1');
+                alert('Loja FECHADA! 🔴\nA faixa vermelha já vai aparecer no site.');
+            }
+            atualizarBotaoLoja();
+        }
+        atualizarBotaoLoja();
+    </script>
 </body>
 
 </html>

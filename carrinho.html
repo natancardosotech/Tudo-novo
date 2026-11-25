@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrinho</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Seu Carrinho</h1>
+    <div id="itensCarrinho"></div>
+    <p>Subtotal: <span id="subtotal"></span></p>
+    <p>Frete: <span id="frete"></span></p>
+    <p>Total: <span id="total"></span></p>
+    <p id="faltaGratis"></p>
+    <input id="nome" placeholder="Seu nome"><input id="telefone" placeholder="(13) 99999-9999"><input id="endereco"
+        placeholder="Endereço completo"><input id="obs" placeholder="Obs: ex: sem morango">
+    <select id="cidade">
+        <option>Mongaguá</option>
+        <option>Itanhaém</option>
+        <option>Praia Grande</option>
+    </select>
+    <label><input type="radio" name="tipo" value="entrega" checked> Entrega</label><label><input type="radio"
+            name="tipo" value="retirada"> Retirada</label>
+    <br><button onclick="irParaPagamento()">Ir para Pagamento</button>
+    <script src="script.js"></script>
+</body>
+
+</html>

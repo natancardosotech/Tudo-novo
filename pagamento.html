@@ -4,25 +4,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagamento</title>
+    <title>Pagamento - Tudo Novo</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        .pag-btn {
+            padding: 12px 20px;
+            margin: 5px;
+            border: 1px solid #ff6b9d;
+            background: #fff;
+            color: #ff6b9d;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .escondido {
+            display: none !important;
+        }
+
+        #areaPix,
+        #areaCartao {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff7f0;
+            border-radius: 12px;
+        }
+    </style>
 </head>
 
 <body>
     <h1>Pagamento</h1>
+    <div id="aviso-fechado"
+        style="display:none; background:#e91e63; color:#fff; text-align:center; padding:10px; font-weight:700;">Já
+        fechamos por hoje! 😴 Volta amanhã às 10h!</div>
     <div id="resumoPedido"></div>
     <h2 id="totalFinal"></h2>
     <button class="pag-btn" id="btn-pix" onclick="escolherPagamento('pix')">Pix</button>
-    <button class="pag-btn" id="btn-dinheiro" onclick="escolherPagamento('dinheiro')">Dinheiro</button>
-    <button class="pag-btn" id="btn-cartao" onclick="escolherPagamento('cartao')">Cartão</button>
+    <button class="pag-btn" id="btn-debito" onclick="escolherPagamento('debito')">Débito</button>
+    <button class="pag-btn" id="btn-credito" onclick="escolherPagamento('credito')">Crédito</button>
     <div id="areaPix" class="escondido">
-        <p>Chave Pix: sua-chave-aqui</p>
+        <p><b>Chave Pix:</b> 44.606.808/0001-92</p>
+        <p>Pague com a chave CNPJ acima</p>
+        <button class="pag-btn" onclick="copiarPix()">📋 Copiar Chave Pix</button>
     </div>
-    <div id="areaDinheiro" class="escondido"><input id="troco" placeholder="Troco para quanto?"></div>
     <div id="areaCartao" class="escondido">
-        <p>Pagamento na entrega / retirada</p>
+        <p>Pagamento na entrega / retirada - Cartão de Débito/Crédito</p>
     </div>
-    <br><button onclick="finalizarPedido()">Finalizar Pedido</button>
+    <br><br>
+    <button class="pag-btn btn-finalizar" onclick="finalizarPedido()">Finalizar Pedido ✅</button>
+    <br><br>
+    <a href="index.html">← Voltar para a loja</a>
     <script src="script.js"></script>
 </body>
 
